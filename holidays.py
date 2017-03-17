@@ -2224,3 +2224,91 @@ class Norway(HolidayBase):
 
 class NO(Norway):
     pass
+
+class Finland(HolidayBase):
+    """
+    Finnish holidays.
+    Note that holidays falling on a sunday is "lost",
+    it will not be moved to another day to make up for the collision.
+
+    In Finland, ALL sundays are considered a holiday
+    (https://en.wikipedia.org/wiki/Public_holidays_in_Finland).
+    Initialize this class with include_sundays=False
+    to not include sundays as a holiday.
+
+    Primary sources:
+    https://en.wikipedia.org/wiki/Public_holidays_in_Finland
+    http://www.xn--juhlapyht-22a.fi/
+    """
+
+    def __init__(self, include_sundays=True, **kwargs):
+        """
+
+        :param include_sundays: Whether to consider sundays as a holiday
+        (which they are in Finland)
+        :param kwargs:
+        """
+        self.country = "FI"
+        self.include_sundays = include_sundays
+        HolidayBase.__init__(self, **kwargs)
+
+    def _populate(self, year):
+        # Add all the sundays of the year before adding the "real" holidays
+        if self.include_sundays:
+            first_day_of_year = date(year, 1, 1)
+            first_sunday_of_year = first_day_of_year\
+                + rd(days=SUNDAY - first_day_of_year.weekday())
+            cur_date = first_sunday_of_year
+
+            while cur_date < date(year+1, 1, 1):
+                assert cur_date.weekday() == SUNDAY
+
+                self[cur_date] = "Sunnuntai"
+                cur_date += rd(days=7)
+
+        # ========= Static holidays =========
+        self[date(year, 1, 1)] = "Uudenvuodenpäivä"
+        self[date(year, 1, 6)] = "Loppiainen"
+        self[date(year, 5, 1)] = "Vappu"
+        self[date(year, 12, 6)] = "Itsenäisyyspäivä"
+        self[date(year, 12, 25)] = "Joulupäivä"
+        self[date(year, 12, 26)] = "Tapaninpäivä"
+        #Christmas Eve isn't official holiday in Finland.
+        #Even the liqour stores (Alko) are open.
+
+
+        # ========= Moving holidays =========
+        e = easter(year)
+        good_friday = e - rd(days=2)
+        easter_sunday = e
+        easter_monday = e + rd(days=1)
+        ascension_thursday = e + rd(days=39)
+        pentecost = e + rd(days=49)
+        #Midsummer Eve is on Friday between 19th and 25th of June
+        #TODO Kuis tuo rd(weekday=FR(+1)) toimaa
+        #Testaa juhannuksilla jotka on nuilla rajapäivillä
+        #Testaa all saintsi samalla tavalla
+        midsummer_eve = date(year,6,19) + rd(weekday=FR(+1))
+        midsummer_day = midsummer_eve + 1
+        all_saints_day = date(year,10,31) + rd(weekday=SA(+1))
+
+        assert good_friday.weekday() == FRIDAY
+        assert easter_sunday.weekday() == SUNDAY
+        assert easter_monday.weekday() == MONDAY
+        assert ascension_thursday.weekday() == THURSDAY
+        assert pentecost.weekday() == SUNDAY
+        assert midsummer_eve.weekday() == FRIDAY
+        assert midsummer_day.weekday() == SATURDAY
+        assert all_saints_day.weekday() == SATURDAY
+
+        self[good_friday] = "Pitkäperjantai"
+        self[easter_sunday] = "Pääsiäispäivä"
+        self[easter_monday] = "2. pääsiäispäivä"
+        self[ascension_thursday] = "Helatorstai"
+        self[pentecost] = "Helluntaipäivä"
+        self[midsummer_eve] = "Juhannusaatto"
+        self[midsummer_day] = "Juhannuspäivä"
+        self[all_saints_day] = "Pyhäinpäivä"
+
+class FI(Finland):
+    pass
