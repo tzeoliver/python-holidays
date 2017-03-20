@@ -2270,7 +2270,8 @@ class Finland(HolidayBase):
         self[date(year, 1, 1)] = "Uudenvuodenpäivä"
         self[date(year, 1, 6)] = "Loppiainen"
         self[date(year, 5, 1)] = "Vappu"
-        self[date(year, 12, 6)] = "Itsenäisyyspäivä"
+        if year >= 1917:
+            self[date(year, 12, 6)] = "Itsenäisyyspäivä"
         self[date(year, 12, 25)] = "Joulupäivä"
         self[date(year, 12, 26)] = "Tapaninpäivä"
         #Christmas Eve isn't official holiday in Finland.
